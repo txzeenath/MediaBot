@@ -1,5 +1,6 @@
 const { Events } = require('discord.js');
 const { MediaChannels } = require('../database.js');
+const DEBUG = false;
 
 module.exports = {
 	name: Events.MessageCreate,
@@ -17,14 +18,14 @@ module.exports = {
         if(hasAttachment){
             message.attachments.forEach(attachment => {
             const fileType = attachment.contentType || attachment.url.split('.').pop();
-            console.log(fileType);
+            DEBUG && console.log(fileType);
             if (!fileType.startsWith('image/') && !fileType.startsWith('video/')) {
             allAttachmentsAreMedia = false;
             }
             });
         }
 
-		console.log(`Attachment: ${hasAttachment}, Embed:${hasEmbed}, Thread:${isThread}, Media_OK:${allAttachmentsAreMedia}`);
+		DEBUG && console.log(`Attachment: ${hasAttachment}, Embed:${hasEmbed}, Thread:${isThread}, Media_OK:${allAttachmentsAreMedia}`);
         if(!hasAttachment && !hasEmbed && !isThread ||(!allAttachmentsAreMedia))
             message.delete()
 	},
