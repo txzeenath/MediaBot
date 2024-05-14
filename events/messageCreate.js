@@ -13,8 +13,19 @@ module.exports = {
         hasEmbed = !message.embeds || message.embeds.length > 0;
         inThread = !message.thread;
         isThread = message.channel.isThread();
-		console.log(`Attachment: ${hasAttachment}, Embed:${hasEmbed}, Thread:${isThread}`);
-        if(!hasAttachment && !hasEmbed && !isThread)
+        let allAttachmentsAreMedia = true;
+        if(hasAttachment){
+            message.attachments.forEach(attachment => {
+            const fileType = attachment.contentType || attachment.url.split('.').pop();
+            console.log(fileType);
+            if (!fileType.startsWith('image/') && !fileType.startsWith('video/')) {
+            allAttachmentsAreMedia = false;
+            }
+            });
+        }
+
+		console.log(`Attachment: ${hasAttachment}, Embed:${hasEmbed}, Thread:${isThread}, Media_OK:${allAttachmentsAreMedia}`);
+        if(!hasAttachment && !hasEmbed && !isThread ||(!allAttachmentsAreMedia))
             message.delete()
 	},
 };
