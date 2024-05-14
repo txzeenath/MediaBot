@@ -1,5 +1,6 @@
 const Sequelize = require('sequelize');
 const { dbpassword } = require('./config.json');
+const DEBUG = false;
 
 const sequelize = new Sequelize('database', 'DerpBot', dbpassword, {
     host: 'localhost',

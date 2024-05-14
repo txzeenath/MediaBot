@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, ChannelType, PermissionsBitField } = require('discord.js');
 const { MediaChannels } = require('../../database.js');
+const DEBUG = false;
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -10,7 +11,7 @@ module.exports = {
         const channel = interaction.channel;
         const guild = interaction.guild;
 
-        console.log('Executing media-channel command...');
+        DEBUG && console.log('Executing media-channel command...');
 
         if (!channel || channel.type !== ChannelType.GuildText) {
             await interaction.reply({
