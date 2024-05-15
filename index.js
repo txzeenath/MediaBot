@@ -23,12 +23,16 @@ for (const folder of commandFolders) {
     const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
     for (const file of commandFiles) {
         const filePath = path.join(commandsPath, file);
-        const command = require(filePath);
-        if ('data' in command && 'execute' in command) {
-            client.commands.set(command.data.name, command);
-            DEBUG && console.log(`Loaded command: ${command.data.name}`);
-        } else {
-            console.error(`[ERROR] The command at ${filePath} is missing a required "data" or "execute" property.`);
+        try {
+            const command = require(filePath);
+            if ('data' in command && 'execute' in command) {
+                client.commands.set(command.data.name, command);
+                DEBUG && console.log(`Loaded command: ${command.data.name}`);
+            } else {
+                console.error(`[ERROR] The command at ${filePath} is missing a required "data" or "execute" property.`);
+            }
+        } catch (error) {
+            console.error(`[ERROR] Failed to load command at ${filePath}:`, error);
         }
     }
 }
@@ -39,25 +43,39 @@ const eventFiles = fs.readdirSync(eventsPath).filter(file => file.endsWith('.js'
 DEBUG && console.log('Loading events...');
 for (const file of eventFiles) {
     const filePath = path.join(eventsPath, file);
-    const event = require(filePath);
-    if (event.once) {
-        client.once(event.name, (...args) => {
-            DEBUG && console.log(`Event (once) triggered: ${event.name}`);
-            event.execute(...args);
-        });
-        DEBUG && console.log(`Loaded event (once): ${event.name}`);
-    } else {
-        client.on(event.name, (...args) => {
-            DEBUG && console.log(`Event triggered: ${event.name}`);
-            event.execute(...args);
-        });
-        DEBUG && console.log(`Loaded event: ${event.name}`);
+    try {
+        const event = require(filePath);
+        if (event.once) {
+            client.once(event.name, (...args) => {
+                DEBUG && console.log(`Event (once) triggered: ${event.name}`);
+                try {
+                    event.execute(...args);
+                } catch (error) {
+                    console.error(`[ERROR] Error executing event (once) ${event.name}:`, error);
+                }
+            });
+            DEBUG && console.log(`Loaded event (once): ${event.name}`);
+        } else {
+            client.on(event.name, (...args) => {
+                DEBUG && console.log(`Event triggered: ${event.name}`);
+                try {
+                    event.execute(...args);
+                } catch (error) {
+                    console.error(`[ERROR] Error executing event ${event.name}:`, error);
+                }
+            });
+            DEBUG && console.log(`Loaded event: ${event.name}`);
+        }
+    } catch (error) {
+        console.error(`[ERROR] Failed to load event at ${filePath}:`, error);
     }
 }
 
 client.login(token).then(() => {
     DEBUG && console.log('Bot logged in successfully.');
-    registerCommands().catch(console.error);
+    registerCommands().catch(error => {
+        console.error('[ERROR] Failed to register commands:', error);
+    });
 }).catch(err => {
     console.error('Login error:', err);
 });
