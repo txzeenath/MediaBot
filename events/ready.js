@@ -1,6 +1,6 @@
 const { Events, PermissionsBitField } = require('discord.js');
 const { syncDatabase, MediaChannels } = require('../database.js');
-const DEBUG = true;
+const DEBUG = false;
 
 module.exports = {
     name: Events.ClientReady,
