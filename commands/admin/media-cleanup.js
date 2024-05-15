@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, PermissionsBitField, ChannelType } = require('discord.js');
+const { SlashCommandBuilder, ChannelType, PermissionsBitField } = require('discord.js');
 const { MediaChannels } = require('../../database.js');
 const DEBUG = false;
 
@@ -59,14 +59,14 @@ module.exports = {
                 }
 
                 const deletions = [];
-                messages.forEach(message => {
+                messages.forEach(async (message) => {
                     const hasAttachment = message.attachments.size > 0;
                     const hasEmbed = message.embeds && message.embeds.length > 0;
-                    const isThread = message.channel.isThread();
+                    const inThread = message.channel.isThread();
 
                     let allAttachmentsAreMedia = true;
                     if (hasAttachment) {
-                        message.attachments.forEach(attachment => {
+                        message.attachments.forEach((attachment) => {
                             const fileType = attachment.contentType || attachment.url.split('.').pop();
                             DEBUG && console.log(fileType);
                             if (!fileType.startsWith('image/') && !fileType.startsWith('video/')) {
@@ -74,9 +74,21 @@ module.exports = {
                             }
                         });
                     }
+                    let allEmbedsAreMedia = true;
+                    if (hasEmbed) {
+                        const fileExtensionsPattern = /\.(jpg|jpeg|png|gif|gifv|webm|mp4|wav|mp3|ogg)$/i;
+                        message.embeds.forEach((embed) => {
+                            const url = embed.url;
+                            const fileType = embed.contentType || url.split('.').pop();
+                            DEBUG && console.log(fileType);
+                            if (!fileExtensionsPattern.test(url)) {
+                                allEmbedsAreMedia = false;
+                            }
+                        });
+                    }
 
-                    DEBUG && console.log(`Attachment: ${hasAttachment}, Embed: ${hasEmbed}, Thread: ${isThread}, Media_OK: ${allAttachmentsAreMedia}`);
-                    if (!hasAttachment && !hasEmbed && !isThread || (!allAttachmentsAreMedia)) {
+                    DEBUG && console.log(`Attachment: ${hasAttachment}, Embed: ${hasEmbed}, Thread: ${inThread}, Media_OK: ${allAttachmentsAreMedia}, Ext: ${fileType}`);
+                    if (!hasAttachment && !hasEmbed && !inThread || (!allAttachmentsAreMedia || !allEmbedsAreMedia)) {
                         deletions.push(message.delete().catch(error => {
                             console.error('Failed to delete message:', error);
                         }));
