@@ -31,20 +31,32 @@ module.exports = {
             }
 
             let allEmbedsAreMedia = true;
-            let fileType = null;
             if (hasEmbed) {
-                const fileExtensionsPattern = /\.(jpg|jpeg|png|gif|gifv|webm|mp4|wav|mp3|ogg)$/i;
-                message.embeds.forEach((embed) => {
-                    const url = embed.url;
-                    const fileType = embed.contentType || url.split('.').pop();
-                    DEBUG && console.log(fileType);
-                    if (!fileExtensionsPattern.test(url)) {
-                        allEmbedsAreMedia = false;
+                const isImage = async (url) => {
+                    try {
+                        const { default: fetch } = await import('node-fetch'); // Dynamic import
+                        const response = await fetch(url);
+                        if (!response.ok) {
+                            return false;
+                        }
+                        const contentType = response.headers.get('content-type');
+                        return contentType && (contentType.startsWith('image/') || contentType.startsWith('video/'));
+                    } catch (error) {
+                        console.error('Error checking image URL:', error);
+                        return false;
                     }
-                });
+                };
+                for (const embed of message.embeds) {
+                    if (embed.url && await isImage(embed.url)) {
+                        continue;
+                    }
+                    allEmbedsAreMedia = false;
+                }
             }
+            
+            
 
-            DEBUG && console.log(`Attachment: ${hasAttachment}, Embed: ${hasEmbed}, Thread: ${inThread}, Media_OK: ${allAttachmentsAreMedia}, Ext: ${fileType}`);
+            DEBUG && console.log(`Attachment: ${hasAttachment}, Embed: ${hasEmbed}, Thread: ${inThread}, Media_OK: ${allAttachmentsAreMedia}, Embed_OK: ${allEmbedsAreMedia}`);
             if (!hasAttachment && !hasEmbed && !inThread || (!allAttachmentsAreMedia || !allEmbedsAreMedia)) {
                 await message.delete().catch(error => {
                     console.error('Failed to delete message:', error);
