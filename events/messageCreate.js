@@ -31,6 +31,7 @@ module.exports = {
             }
 
             let allEmbedsAreMedia = true;
+            let fileType = null;
             if (hasEmbed) {
                 const fileExtensionsPattern = /\.(jpg|jpeg|png|gif|gifv|webm|mp4|wav|mp3|ogg)$/i;
                 message.embeds.forEach((embed) => {

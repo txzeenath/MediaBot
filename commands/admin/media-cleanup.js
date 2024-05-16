@@ -10,6 +10,15 @@ module.exports = {
     async execute(interaction) {
         const channel = interaction.channel;
         const guild = interaction.guild;
+        const channelID = channel.id;
+        const mc = await MediaChannels.findOne({ where: { channelID } });
+        if (!mc) {
+            await interaction.reply({
+                content: "This channel is not a media-only channel.",
+                ephemeral: true
+            });
+            return;
+        }
 
         DEBUG && console.log('Executing media-cleanup command...');
 
@@ -75,6 +84,7 @@ module.exports = {
                         });
                     }
                     let allEmbedsAreMedia = true;
+                    let fileType = null;
                     if (hasEmbed) {
                         const fileExtensionsPattern = /\.(jpg|jpeg|png|gif|gifv|webm|mp4|wav|mp3|ogg)$/i;
                         message.embeds.forEach((embed) => {
