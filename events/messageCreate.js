@@ -30,36 +30,25 @@ module.exports = {
                 });
             }
 
+            let embedType = "None";
             let allEmbedsAreMedia = true;
             if (hasEmbed) {
-                const isImage = async (url) => {
-                    try {
-                        const { default: fetch } = await import('node-fetch'); // Dynamic import
-                        const response = await fetch(url);
-                        if (!response.ok) {
-                            return false;
-                        }
-                        const contentType = response.headers.get('content-type');
-                        return contentType && (contentType.startsWith('image/') || contentType.startsWith('video/'));
-                    } catch (error) {
-                        console.error('Error checking image URL:', error);
-                        return false;
-                    }
-                };
                 for (const embed of message.embeds) {
-                    if (embed.url && await isImage(embed.url)) {
-                        continue;
+                    const embedData = embed.data;
+                    if (embedData) {
+                        embedType = embedData.type;
+                        if (embedType != "image" && embedType != "video")
+                            allEmbedsAreMedia = false;
                     }
-                    allEmbedsAreMedia = false;
                 }
             }
-            
-            
 
-            DEBUG && console.log(`Attachment: ${hasAttachment}, Embed: ${hasEmbed}, Thread: ${inThread}, Media_OK: ${allAttachmentsAreMedia}, Embed_OK: ${allEmbedsAreMedia}`);
+            DEBUG && console.log(`Attachment: ${hasAttachment}, Embed: ${hasEmbed}, Thread: ${inThread}, Media_OK: ${allAttachmentsAreMedia}, Embed_OK: ${allEmbedsAreMedia}, EmbedType: ${embedType}`);
             if (!hasAttachment && !hasEmbed && !inThread || (!allAttachmentsAreMedia || !allEmbedsAreMedia)) {
                 await message.delete().catch(error => {
-                    console.error('Failed to delete message:', error);
+                    if (error.code !== 10008) { // 10008: Unknown Message
+                        console.error('Failed to delete message:', error);
+                    }
                 });
             }
         } catch (error) {
