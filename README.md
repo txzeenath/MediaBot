@@ -1,4 +1,4 @@
-"# DerpBot" 
+"# MediaBot" 
 Just a dumb discord bot that makes channels media only.
 
 Add it to the server, give it access to the channel in question (or add it to the channel), and type /media-only
