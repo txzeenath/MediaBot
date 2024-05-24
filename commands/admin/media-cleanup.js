@@ -8,6 +8,8 @@ module.exports = {
         .setDescription('Scans the entire channel and deletes all non-media posts.')
         .setDefaultMemberPermissions(PermissionsBitField.Flags.ManageMessages),
     async execute(interaction) {
+        if (message.author.bot || hasManageMessagesPermission(message)) return;
+
         const channel = interaction.channel;
         const guild = interaction.guild;
         const channelID = channel.id;
@@ -132,3 +134,7 @@ module.exports = {
         }
     }
 };
+
+function hasManageMessagesPermission(message) {
+    return message.member.permissions.has(PermissionsBitField.Flags.ManageMessages);
+}

@@ -1,58 +1,85 @@
-const { Events } = require('discord.js');
-const { MediaChannels } = require('../database.js');
-const DEBUG = false;
+const { Events, PermissionsBitField } = require('discord.js');
+const { MediaChannels, FlashChannels } = require('../database.js');
+const DEBUG = true;
 
 module.exports = {
     name: Events.MessageCreate,
     once: false,
     async execute(message) {
-        try {
-            const channelID = message.channel.id;
-            const mc = await MediaChannels.findOne({ where: { channelID } });
-            if (!mc) return;
+        if (message.author.bot || hasManageMessagesPermission(message)) return;
 
-            // Delay processing for 5 seconds. Sometimes links won't resolve to an embed immediately.
-            DEBUG && console.log("Waiting 5 seconds...");
-            await new Promise(resolve => setTimeout(resolve, 5000));
+        const channelID = message.channel.id;
+        const mc = await MediaChannels.findOne({ where: { channelID } });
+        const fc = await FlashChannels.findOne({ where: { channelID } });
+        let deleteDelay = fc ? 12000 : 5000;
 
-            const hasAttachment = message.attachments.size > 0;
-            const hasEmbed = message.embeds && message.embeds.length > 0;
-            const inThread = message.channel.isThread();
+        if (fc) {
+            DEBUG && console.log(`Flash: Waiting ${deleteDelay / 1000} seconds...`);
+            await new Promise(resolve => setTimeout(resolve, deleteDelay));
+            await handleFlashChannel(message);
+        }
 
-            let allAttachmentsAreMedia = true;
-            if (hasAttachment) {
-                message.attachments.forEach(attachment => {
-                    const fileType = attachment.contentType || attachment.url.split('.').pop();
-                    DEBUG && console.log(fileType);
-                    if (!fileType.startsWith('image/') && !fileType.startsWith('video/')) {
-                        allAttachmentsAreMedia = false;
-                    }
-                });
-            }
-
-            let embedType = "None";
-            let allEmbedsAreMedia = true;
-            if (hasEmbed) {
-                for (const embed of message.embeds) {
-                    const embedData = embed.data;
-                    if (embedData) {
-                        embedType = embedData.type;
-                        if (embedType != "image" && embedType != "video")
-                            allEmbedsAreMedia = false;
-                    }
-                }
-            }
-
-            DEBUG && console.log(`Attachment: ${hasAttachment}, Embed: ${hasEmbed}, Thread: ${inThread}, Media_OK: ${allAttachmentsAreMedia}, Embed_OK: ${allEmbedsAreMedia}, EmbedType: ${embedType}`);
-            if (!hasAttachment && !hasEmbed && !inThread || (!allAttachmentsAreMedia || !allEmbedsAreMedia)) {
-                await message.delete().catch(error => {
-                    if (error.code !== 10008) { // 10008: Unknown Message
-                        console.error('Failed to delete message:', error);
-                    }
-                });
-            }
-        } catch (error) {
-            console.error('An error occurred in the message create event handler:', error);
+        if (mc) {
+            DEBUG && console.log(`Media: Waiting ${deleteDelay / 1000} seconds...`);
+            await new Promise(resolve => setTimeout(resolve, deleteDelay));
+            await handleMediaChannel(message);
         }
     },
 };
+
+function hasManageMessagesPermission(message) {
+    return message.member.permissions.has(PermissionsBitField.Flags.ManageMessages);
+}
+
+async function handleFlashChannel(message) {
+    const hasAttachment = message.attachments.size > 0;
+    const hasEmbed = message.embeds.length > 0;
+    const inThread = message.channel.isThread();
+
+    if ((hasAttachment || hasEmbed) && !inThread) {
+        await message.channel.send(`...and like that :face_exhaling:, ${message.author}'s post is gone.`);
+        await deleteMessage(message);
+    }
+}
+
+async function handleMediaChannel(message) {
+    const hasAttachment = message.attachments.size > 0;
+    const hasEmbed = message.embeds.length > 0;
+    const inThread = message.channel.isThread();
+
+    if (!hasAttachment && !hasEmbed && !inThread) {
+        return await deleteMessage(message);
+    }
+
+    if (hasAttachment) {
+        const allAttachmentsAreMedia = [...message.attachments.values()].every(attachment => {
+            const fileType = attachment.contentType || attachment.url.split('.').pop();
+            return fileType.startsWith('image/') || fileType.startsWith('video/');
+        });
+
+        if (!allAttachmentsAreMedia) {
+            return await deleteMessage(message);
+        }
+    }
+
+    if (hasEmbed) {
+        const allEmbedsAreMedia = message.embeds.every(embed => {
+            const embedType = embed.data?.type;
+            return embedType === "image" || embedType === "video";
+        });
+
+        if (!allEmbedsAreMedia) {
+            return await deleteMessage(message);
+        }
+    }
+}
+
+async function deleteMessage(message) {
+    try {
+        await message.delete();
+    } catch (error) {
+        if (error.code !== 10008) {
+            console.error('Failed to delete message:', error);
+        }
+    }
+}

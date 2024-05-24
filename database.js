@@ -9,6 +9,13 @@ const sequelize = new Sequelize('database', 'DerpBot', dbpassword, {
     storage: 'database.sqlite',
 });
 
+const FlashChannels = sequelize.define('FlashChannels', {
+    channelID: {
+        type: Sequelize.STRING,
+        unique: true,
+    }
+});
+
 const MediaChannels = sequelize.define('MediaChannels', {
     channelID: {
         type: Sequelize.STRING,
@@ -26,4 +33,4 @@ async function syncDatabase() {
     }
 }
 
-module.exports = { sequelize, MediaChannels, syncDatabase };
+module.exports = { sequelize, MediaChannels, FlashChannels, syncDatabase };

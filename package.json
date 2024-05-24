@@ -1,7 +1,7 @@
 {
-  "name": "derpbot",
+  "name": "mediabot",
   "version": "1.0.0",
-  "description": "Has one purpose. Make channels media-only.",
+  "description": "Media helper functions.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
