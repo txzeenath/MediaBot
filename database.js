@@ -27,7 +27,7 @@ const MediaChannels = sequelize.define('MediaChannels', {
 async function syncDatabase() {
     try {
         await sequelize.sync();
-        console.log('Database synchronized successfully.');
+        DEBUG && console.log('Database synchronized successfully.');
     } catch (error) {
         console.error('Unable to synchronize the database:', error);
     }

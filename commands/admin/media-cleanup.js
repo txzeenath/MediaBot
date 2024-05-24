@@ -1,6 +1,6 @@
 const { SlashCommandBuilder, ChannelType, PermissionsBitField } = require('discord.js');
 const { MediaChannels } = require('../../database.js');
-const DEBUG = false;
+const DEBUG = true;
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -8,8 +8,6 @@ module.exports = {
         .setDescription('Scans the entire channel and deletes all non-media posts.')
         .setDefaultMemberPermissions(PermissionsBitField.Flags.ManageMessages),
     async execute(interaction) {
-        if (message.author.bot || hasManageMessagesPermission(message)) return;
-
         const channel = interaction.channel;
         const guild = interaction.guild;
         const channelID = channel.id;
@@ -35,13 +33,11 @@ module.exports = {
         const botMember = await guild.members.fetch(interaction.client.user.id);
         const botPermissions = channel.permissionsFor(botMember);
 
-        if (
-            !botPermissions.has([
-                PermissionsBitField.Flags.ManageMessages,
-                PermissionsBitField.Flags.SendMessages,
-                PermissionsBitField.Flags.ViewChannel
-            ])
-        ) {
+        if (!botPermissions.has([
+            PermissionsBitField.Flags.ManageMessages,
+            PermissionsBitField.Flags.SendMessages,
+            PermissionsBitField.Flags.ViewChannel
+        ])) {
             await interaction.reply({
                 content: "The bot does not have the necessary permissions to manage messages in this channel. Please ensure the bot has View Channel, Send Messages, and Manage Messages permissions. You may need to add the bot to the channel.",
                 ephemeral: true
@@ -70,6 +66,14 @@ module.exports = {
                 }
 
                 for (const message of messages.values()) {
+                    if (message.author.bot) {
+                        DEBUG && console.log("Message was sent by the bot. Ignore.");
+                        continue;
+                    }
+                    if (hasManageMessagesPermission(message)) {
+                        DEBUG && console.log("Message was sent by a mod/admin. Ignore.");
+                        continue;
+                    }
                     const hasAttachment = message.attachments.size > 0;
                     const hasEmbed = message.embeds && message.embeds.length > 0;
                     const inThread = message.channel.isThread();

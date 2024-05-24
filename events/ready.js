@@ -1,5 +1,5 @@
-const { Events, PermissionsBitField } = require('discord.js');
-const { syncDatabase, MediaChannels } = require('../database.js');
+const { Events } = require('discord.js');
+const { syncDatabase } = require('../database.js');
 const DEBUG = false;
 
 module.exports = {

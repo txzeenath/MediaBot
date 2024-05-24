@@ -6,7 +6,14 @@ module.exports = {
     name: Events.MessageCreate,
     once: false,
     async execute(message) {
-        if (message.author.bot || hasManageMessagesPermission(message)) return;
+        if (message.author.bot) {
+            DEBUG && console.log("Message was sent by the bot. Ignore.");
+            return;
+        }
+        if (hasManageMessagesPermission(message)) {
+            DEBUG && console.log("Message was sent by a mod/admin. Ignore.");
+            return;
+        }
 
         const channelID = message.channel.id;
         const mc = await MediaChannels.findOne({ where: { channelID } });
