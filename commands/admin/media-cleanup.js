@@ -70,10 +70,10 @@ module.exports = {
                         DEBUG && console.log("Message was sent by the bot. Ignore.");
                         continue;
                     }
-                    if (hasManageMessagesPermission(message)) {
-                        DEBUG && console.log("Message was sent by a mod/admin. Ignore.");
-                        continue;
-                    }
+                    //if (hasManageMessagesPermission(message)) {
+                    //    DEBUG && console.log("Message was sent by a mod/admin. Ignore.");
+                    //    continue;
+                    //}
                     const hasAttachment = message.attachments.size > 0;
                     const hasEmbed = message.embeds && message.embeds.length > 0;
                     const inThread = message.channel.isThread();
