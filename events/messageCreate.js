@@ -1,4 +1,4 @@
-const { Events, PermissionsBitField } = require('discord.js');
+const { Events } = require('discord.js');
 const { MediaChannels, FlashChannels } = require('../database.js');
 const DEBUG = true;
 
@@ -18,7 +18,7 @@ module.exports = {
         const channelID = message.channel.id;
         const mc = await MediaChannels.findOne({ where: { channelID } });
         const fc = await FlashChannels.findOne({ where: { channelID } });
-        let deleteDelay = fc ? 12000 : 5000;
+        let deleteDelay = fc ? 120000 : 5000;
 
         if (fc) {
             DEBUG && console.log(`Flash: Waiting ${deleteDelay / 1000} seconds...`);
@@ -34,9 +34,9 @@ module.exports = {
     },
 };
 
-function hasManageMessagesPermission(message) {
-    return message.member.permissions.has(PermissionsBitField.Flags.ManageMessages);
-}
+//function hasManageMessagesPermission(message) {
+//    return message.member.permissions.has(PermissionsBitField.Flags.ManageMessages);
+//}
 
 async function handleFlashChannel(message) {
     const hasAttachment = message.attachments.size > 0;

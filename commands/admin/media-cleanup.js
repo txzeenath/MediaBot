@@ -139,6 +139,6 @@ module.exports = {
     }
 };
 
-function hasManageMessagesPermission(message) {
-    return message.member.permissions.has(PermissionsBitField.Flags.ManageMessages);
-}
+//function hasManageMessagesPermission(message) {
+//    return message.member.permissions.has(PermissionsBitField.Flags.ManageMessages);
+//}
