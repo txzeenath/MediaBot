@@ -1,15 +1,7 @@
 const { spawn } = require('child_process');
 
 function startBot() {
-    const bot = spawn('node', ['index.js']);
-
-    bot.stdout.on('data', (data) => {
-        console.log(`stdout: ${data}`);
-    });
-
-    bot.stderr.on('data', (data) => {
-        console.error(`stderr: ${data}`);
-    });
+    const bot = spawn('node', ['index.js'], { stdio: 'inherit' });
 
     bot.on('close', (code) => {
         console.log(`Bot process exited with code ${code}. Restarting...`);
