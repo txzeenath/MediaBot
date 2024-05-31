@@ -1,6 +1,6 @@
 const { SlashCommandBuilder, ChannelType, PermissionsBitField } = require('discord.js');
 const { MediaChannels } = require('../../database.js');
-const DEBUG = true;
+const DEBUG = false;
 
 module.exports = {
     data: new SlashCommandBuilder()

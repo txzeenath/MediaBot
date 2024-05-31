@@ -1,6 +1,6 @@
 const { Events } = require('discord.js');
 const { MediaChannels, FlashChannels } = require('../database.js');
-const DEBUG = true;
+const DEBUG = false;
 
 module.exports = {
     name: Events.MessageCreate,
