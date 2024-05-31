@@ -10,35 +10,30 @@ module.exports = {
             DEBUG && console.log("Message was sent by the bot. Ignore.");
             return;
         }
-        //if (hasManageMessagesPermission(message)) {
-        //    DEBUG && console.log("Message was sent by a mod/admin. Ignore.");
-        //    return;
-        //}
 
         const channelID = message.channel.id;
-        const mc = await MediaChannels.findOne({ where: { channelID } });
-        const fc = await FlashChannels.findOne({ where: { channelID } });
+        const [mc, fc] = await Promise.all([
+            MediaChannels.findOne({ where: { channelID } }),
+            FlashChannels.findOne({ where: { channelID } })
+        ]);
+
         let deleteDelay = fc ? 120000 : 5000;
 
-        if (fc) {
-            DEBUG && console.log(`Flash: Waiting ${deleteDelay / 1000} seconds...`);
-            await new Promise(resolve => setTimeout(resolve, deleteDelay));
-            await handleFlashChannel(message);
-        }
+        DEBUG && console.log(`Waiting ${deleteDelay / 1000} seconds...`);
 
-        if (mc) {
-            DEBUG && console.log(`Media: Waiting ${deleteDelay / 1000} seconds...`);
-            await new Promise(resolve => setTimeout(resolve, deleteDelay));
-            await handleMediaChannel(message);
-        }
+        await new Promise(resolve => setTimeout(resolve, deleteDelay));
+
+        // Run both handlers concurrently and wait for both to complete
+        await Promise.all([
+            handleFlashChannel(message, fc),
+            handleMediaChannel(message, mc)
+        ]);
     },
 };
 
-//function hasManageMessagesPermission(message) {
-//    return message.member.permissions.has(PermissionsBitField.Flags.ManageMessages);
-//}
+async function handleFlashChannel(message, fc) {
+    if (!fc) return;
 
-async function handleFlashChannel(message) {
     const hasAttachment = message.attachments.size > 0;
     const hasEmbed = message.embeds.length > 0;
     const inThread = message.channel.isThread();
@@ -49,7 +44,9 @@ async function handleFlashChannel(message) {
     }
 }
 
-async function handleMediaChannel(message) {
+async function handleMediaChannel(message, mc) {
+    if (!mc) return;
+
     const hasAttachment = message.attachments.size > 0;
     const hasEmbed = message.embeds.length > 0;
     const inThread = message.channel.isThread();
