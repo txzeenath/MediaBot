@@ -69,7 +69,8 @@ async function handleMediaChannel(message, mc) {
     if (hasEmbed) {
         const allEmbedsAreMedia = message.embeds.every(embed => {
             const embedType = embed.data?.type;
-            return embedType === "image" || embedType === "video";
+            DEBUG && console.log("Embed type: " + embedType);
+            return embedType === "image" || embedType === "video" || embedType == "gifv";
         });
 
         if (!allEmbedsAreMedia) {

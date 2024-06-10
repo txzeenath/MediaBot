@@ -96,7 +96,7 @@ module.exports = {
                             const embedData = embed.data;
                             if (embedData) {
                                 const embedType = embedData.type;
-                                if (embedType !== "image" && embedType !== "video") {
+                                if (embedType !== "image" && embedType !== "video" && embedType != "gifv") {
                                     allEmbedsAreMedia = false;
                                     break;
                                 }
