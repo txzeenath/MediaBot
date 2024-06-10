@@ -18,6 +18,8 @@ module.exports = {
         ]);
 
         let deleteDelay = fc ? 120000 : 5000;
+        if (DEBUG)
+            deleteDelay *= .1;
 
         DEBUG && console.log(`Waiting ${deleteDelay / 1000} seconds...`);
 
