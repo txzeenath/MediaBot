@@ -5,7 +5,8 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName('media-restart')
         .setDescription('Restarts the bot. (Admin only)')
-        .setDefaultMemberPermissions(PermissionsBitField.Flags.Administrator),
+        .setDefaultMemberPermissions(PermissionsBitField.Flags.Administrator)
+        .setDMPermission(false),
     async execute(interaction) {
         DEBUG && console.log('Executing restart command...');
 

@@ -6,7 +6,8 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName('media-only')
         .setDescription('Toggles the current channel for media only.')
-        .setDefaultMemberPermissions(PermissionsBitField.Flags.ManageChannels),
+        .setDefaultMemberPermissions(PermissionsBitField.Flags.ManageChannels)
+        .setDMPermission(false),
     async execute(interaction) {
         const channel = interaction.channel;
         const guild = interaction.guild;

@@ -6,7 +6,8 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName('media-status')
         .setDescription('Displays the media status of the current channel.')
-        .setDefaultMemberPermissions(PermissionsBitField.Flags.ManageChannels),
+        .setDefaultMemberPermissions(PermissionsBitField.Flags.ManageChannels)
+        .setDMPermission(false),
     async execute(interaction) {
         const channel = interaction.channel;
         const guild = interaction.guild;

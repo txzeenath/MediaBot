@@ -6,7 +6,8 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName('media-cleanup')
         .setDescription('Scans the entire channel and deletes all non-media posts.')
-        .setDefaultMemberPermissions(PermissionsBitField.Flags.ManageMessages),
+        .setDefaultMemberPermissions(PermissionsBitField.Flags.ManageMessages)
+        .setDMPermission(false),
     async execute(interaction) {
         const channel = interaction.channel;
         const guild = interaction.guild;
